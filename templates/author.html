@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-[85vh] flex items-center justify-center px-4 py-12 relative overflow-hidden">
+    <!-- Background Decoration -->
+    <div class="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-primary-50 to-transparent dark:from-primary-900/20 -z-10"></div>
+    
+    <div class="max-w-4xl w-full bg-white dark:bg-dark-800 rounded-[2rem] shadow-2xl overflow-hidden border border-gray-100 dark:border-gray-700 flex flex-col md:flex-row">
+        
+        <!-- Left: Photo Area -->
+        <div class="w-full md:w-2/5 bg-gradient-to-br from-primary-500 to-primary-700 relative flex items-center justify-center p-8">
+            <div class="absolute inset-0 opacity-10" style="background-image: url('https://www.transparenttextures.com/patterns/cubes.png');"></div>
+            
+            <div class="text-center relative z-10">
+                <div class="w-48 h-48 mx-auto rounded-full p-1.5 bg-white/30 backdrop-blur-sm mb-6">
+                    <img src="{{ url_for('static', filename='images/profilepic.png') }}" 
+                         onerror="this.src='https://ui-avatars.com/api/?name=Bertnardo+Mario&background=fff&color=10b981&size=256'"
+                         class="w-full h-full object-cover rounded-full bg-white shadow-lg" 
+                         alt="Bertnardo Mario Uskono">
+                </div>
+                <h2 class="text-2xl font-bold text-white">Bertnardo Mario Uskono</h2>
+                <p class="text-primary-100 font-medium mt-1">Machine Learning Engineer</p>
+                
+                <div class="flex justify-center gap-4 mt-6">
+                    <a href="https://www.linkedin.com/in/bertnardo-mario-uskono/" target="_blank" class="w-10 h-10 rounded-full bg-white/20 hover:bg-white text-white hover:text-primary-600 flex items-center justify-center transition-all backdrop-blur-md">
+                        <i class="fab fa-linkedin-in"></i>
+                    </a>
+                    <a href="https://github.com/mariouskono" target="_blank" class="w-10 h-10 rounded-full bg-white/20 hover:bg-white text-white hover:text-gray-900 flex items-center justify-center transition-all backdrop-blur-md">
+                        <i class="fab fa-github"></i>
+                    </a>
+                    <a href="mailto:bertnardouskono@gmail.com" class="w-10 h-10 rounded-full bg-white/20 hover:bg-white text-white hover:text-red-500 flex items-center justify-center transition-all backdrop-blur-md">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Info Area -->
+        <div class="w-full md:w-3/5 p-8 md:p-12">
+            <div class="mb-8">
+                <h6 class="text-xs font-bold tracking-widest text-primary-600 dark:text-primary-400 uppercase mb-3">About Me</h6>
+                <p class="text-gray-600 dark:text-gray-300 leading-relaxed text-lg">
+                    Mahasiswa semester 7 Ilmu Komputer yang memiliki spesialisasi di bidang Data Science. Sangat antusias dalam memanfaatkan data untuk pengambilan keputusan dan membangun sistem cerdas menggunakan Deep Learning.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-6 mb-8">
+                <div>
+                    <h6 class="text-xs font-bold tracking-widest text-gray-400 uppercase mb-2">Education</h6>
+                    <div class="flex items-center gap-2 text-gray-800 dark:text-white font-semibold">
+                        <i class="fas fa-university text-primary-500"></i>
+                        <span>Univ. Bhayangkara Jaya</span>
+                    </div>
+                </div>
+                <div>
+                    <h6 class="text-xs font-bold tracking-widest text-gray-400 uppercase mb-2">Location</h6>
+                    <div class="flex items-center gap-2 text-gray-800 dark:text-white font-semibold">
+                        <i class="fas fa-map-marker-alt text-primary-500"></i>
+                        <span>Bekasi, Indonesia</span>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h6 class="text-xs font-bold tracking-widest text-gray-400 uppercase mb-4">Tech Stack</h6>
+                <div class="flex flex-wrap gap-2">
+                    <span class="px-4 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-300 rounded-lg text-sm font-semibold border border-blue-100 dark:border-blue-800">
+                        <i class="fab fa-python mr-1"></i> Python
+                    </span>
+                    <span class="px-4 py-2 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-300 rounded-lg text-sm font-semibold border border-orange-100 dark:border-orange-800">
+                        <i class="fas fa-brain mr-1"></i> TensorFlow
+                    </span>
+                    <span class="px-4 py-2 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-300 rounded-lg text-sm font-semibold border border-green-100 dark:border-green-800">
+                        <i class="fas fa-leaf mr-1"></i> Flask
+                    </span>
+                    <span class="px-4 py-2 bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg text-sm font-semibold border border-gray-200 dark:border-gray-600">
+                        <i class="fas fa-database mr-1"></i> SQL
+                    </span>
+                </div>
+            </div>
+            
+            <div class="mt-8 pt-8 border-t border-gray-100 dark:border-gray-700">
+                <a href="https://portounoweb.netlify.app/" target="_blank" class="inline-flex items-center text-primary-600 dark:text-primary-400 font-bold hover:underline">
+                    Kunjungi Portfolio Website <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,278 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
+    
+    <!-- 1. BAGIAN INPUT (FORM) -->
+    <div class="bg-white dark:bg-dark-800 rounded-3xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 md:p-8 animate-fade-in-up">
+        <div class="text-center mb-8">
+            <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Mau Kemana Hari Ini?</h2>
+            <p class="text-gray-500 dark:text-gray-400">Masukkan satu tempat favoritmu di Bogor, kami akan carikan yang mirip!</p>
+        </div>
+
+        <form id="rec-form" class="max-w-4xl mx-auto">
+            <div class="grid md:grid-cols-12 gap-6 items-end">
+                
+                <!-- Input Tempat -->
+                <div class="md:col-span-6 space-y-2">
+                    <label class="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">Nama Tempat Wisata</label>
+                    <div class="relative group">
+                        <i class="fas fa-search absolute left-4 top-3.5 text-gray-400 group-focus-within:text-primary-500 transition-colors"></i>
+                        <input list="places" id="place-input" class="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition text-gray-900 dark:text-white placeholder-gray-400" placeholder="Contoh: Kebun Raya Bogor..." required autocomplete="off">
+                        <datalist id="places">
+                            {% for place in places %}
+                            <option value="{{ place }}">
+                            {% endfor %}
+                        </datalist>
+                    </div>
+                </div>
+
+                <!-- Input Slider (Jumlah & Radius) -->
+                <div class="md:col-span-4 grid grid-cols-2 gap-4">
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Jumlah</label>
+                        <div class="flex items-center gap-3">
+                            <input type="range" id="top_n" min="4" max="10" value="4" class="w-full h-2 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer accent-primary-500">
+                            <span id="count-val" class="font-bold text-primary-600 dark:text-primary-400 w-6 text-center">4</span>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Radius (KM)</label>
+                        <div class="flex items-center gap-3">
+                            <input type="range" id="radius" min="1" max="50" value="10" class="w-full h-2 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer accent-primary-500">
+                            <span id="rad-val" class="font-bold text-primary-600 dark:text-primary-400 w-8 text-center">10</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tombol Submit -->
+                <div class="md:col-span-2">
+                    <button type="submit" class="w-full py-3 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl shadow-lg shadow-primary-600/30 transition-all transform active:scale-95 flex justify-center items-center gap-2 h-[50px]">
+                        <span id="btn-text">Cari</span>
+                        <i id="btn-spinner" class="fas fa-circle-notch fa-spin hidden"></i>
+                        <i id="btn-icon" class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- 2. HASIL REKOMENDASI (CARDS) -->
+    <div id="results-section" class="hidden space-y-6">
+        <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 pb-4">
+            <h3 class="text-2xl font-bold text-gray-900 dark:text-white">Rekomendasi Untukmu</h3>
+            <span class="text-sm text-gray-500 dark:text-gray-400">Diurutkan berdasarkan kemiripan</span>
+        </div>
+
+        <!-- Grid Cards -->
+        <div id="cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- Cards will be injected here via JS -->
+        </div>
+    </div>
+
+    <!-- 3. PETA (DI BAWAH) -->
+    <div id="map-section" class="hidden">
+        <div class="bg-white dark:bg-dark-800 rounded-3xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
+            <div class="p-4 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+                <h3 class="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <i class="fas fa-map-marked-alt text-primary-500"></i> Peta Sebaran Lokasi
+                </h3>
+                <span class="text-xs text-gray-500 dark:text-gray-400">Klik marker untuk detail</span>
+            </div>
+            <!-- Map Container -->
+            <div id="map" class="w-full h-[500px] z-0 bg-gray-100"></div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    // --- SETUP AWAL ---
+    const radiusInput = document.getElementById('radius');
+    const topNInput = document.getElementById('top_n');
+    
+    // Update label slider real-time
+    radiusInput.addEventListener('input', (e) => document.getElementById('rad-val').innerText = e.target.value);
+    topNInput.addEventListener('input', (e) => document.getElementById('count-val').innerText = e.target.value);
+
+    // Inisialisasi Peta (Default View)
+    let map = L.map('map', { scrollWheelZoom: false }).setView([-6.5971, 106.8060], 11);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap',
+    }).addTo(map);
+
+    let markers = [];
+
+    // --- LOGIKA UTAMA ---
+    document.getElementById('rec-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        // UI Loading State
+        const btnText = document.getElementById('btn-text');
+        const spinner = document.getElementById('btn-spinner');
+        const btnIcon = document.getElementById('btn-icon');
+        const resultsSection = document.getElementById('results-section');
+        const mapSection = document.getElementById('map-section');
+        const cardsContainer = document.getElementById('cards-container');
+
+        btnText.innerText = "Mencari...";
+        spinner.classList.remove('hidden');
+        btnIcon.classList.add('hidden');
+
+        // Ambil Data
+        const place = document.getElementById('place-input').value;
+        const top_n = topNInput.value;
+        const radius = radiusInput.value;
+
+        try {
+            const response = await fetch('/api/recommend', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ place, top_n, radius })
+            });
+            const data = await response.json();
+
+            if (!response.ok) throw new Error(data.error || "Gagal mengambil data");
+
+            // --- RENDER ULANG ---
+            
+            // 1. Reset
+            markers.forEach(m => map.removeLayer(m));
+            markers = [];
+            cardsContainer.innerHTML = '';
+            
+            // Tampilkan Section
+            resultsSection.classList.remove('hidden');
+            mapSection.classList.remove('hidden');
+
+            // --- [CRITICAL FIX LEAFLET] ---
+            // Kita beri sedikit delay agar CSS 'display: block' pada mapSection selesai diterapkan
+            // Lalu kita panggil map.invalidateSize() agar Leaflet merender ulang ukurannya
+            setTimeout(() => {
+                map.invalidateSize();
+                
+                // 2. Tambahkan Marker Asal (User)
+                const sourceIcon = L.divIcon({
+                    className: 'custom-div-icon',
+                    html: `<div class="w-10 h-10 bg-blue-600 rounded-full border-4 border-white shadow-lg flex items-center justify-center text-white"><i class="fas fa-user"></i></div>`,
+                    iconSize: [40, 40],
+                    iconAnchor: [20, 40],
+                    popupAnchor: [0, -40]
+                });
+                const sourceMarker = L.marker([data.source.lat, data.source.lon], {icon: sourceIcon})
+                    .addTo(map)
+                    .bindPopup(`<div class="font-bold text-blue-700">Lokasi Awal</div>${data.source.nama}`);
+                markers.push(sourceMarker);
+
+                // 3. Render Marker Rekomendasi
+                data.recommendations.forEach((rec, index) => {
+                    const recIcon = L.divIcon({
+                        className: 'custom-div-icon',
+                        html: `<div class="w-8 h-8 bg-primary-500 rounded-full border-2 border-white shadow-md flex items-center justify-center text-white font-bold text-sm">${index+1}</div>`,
+                        iconSize: [32, 32],
+                        iconAnchor: [16, 32],
+                        popupAnchor: [0, -32]
+                    });
+
+                    const marker = L.marker([rec.lat, rec.lon], {icon: recIcon})
+                        .addTo(map)
+                        .bindPopup(`
+                            <div class="text-center">
+                                <b class="text-sm block mb-1">${rec.nama}</b>
+                                <span class="text-xs text-gray-500">Jarak: ${rec.dist}</span>
+                            </div>
+                        `);
+                    markers.push(marker);
+                });
+
+                // 4. Fit Peta agar memuat semua marker
+                if (markers.length > 0) {
+                    const group = new L.featureGroup(markers);
+                    map.fitBounds(group.getBounds().pad(0.2));
+                }
+            }, 200); // Delay 200ms
+
+            // 5. Render Kartu HTML (Tidak perlu delay)
+            data.recommendations.forEach((rec, index) => {
+                const cardHTML = `
+                <div class="group bg-white dark:bg-dark-800 rounded-2xl shadow-md border border-gray-100 dark:border-gray-700 hover:shadow-xl hover:border-primary-500 dark:hover:border-primary-500 transition-all duration-300 overflow-hidden flex flex-col h-full">
+                    
+                    <!-- Gambar -->
+                    <div class="relative h-48 overflow-hidden">
+                        <img src="${rec.image}" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500" alt="${rec.nama}" onerror="this.src='https://via.placeholder.com/400x300?text=Wisata+Bogor'">
+                        <div class="absolute top-3 right-3 bg-white/90 dark:bg-black/80 backdrop-blur-sm px-2 py-1 rounded-lg text-xs font-bold shadow-sm flex items-center gap-1">
+                            <i class="fas fa-star text-yellow-400"></i> ${rec.rating} (${rec.jumlah_rating})
+                        </div>
+                        <div class="absolute bottom-3 left-3 bg-primary-600 text-white text-xs font-bold px-2 py-1 rounded-md shadow-md">
+                            #${index + 1}
+                        </div>
+                    </div>
+
+                    <!-- Konten -->
+                    <div class="p-5 flex-grow flex flex-col">
+                        <h4 class="text-lg font-bold text-gray-900 dark:text-white leading-tight mb-1">${rec.nama}</h4>
+                        <div class="text-sm text-gray-500 dark:text-gray-400 mb-3 flex items-center gap-1">
+                            <i class="fas fa-map-marker-alt text-primary-500"></i> ${rec.kecamatan}, ${rec.kabupaten_kota}
+                        </div>
+
+                        <!-- Stats Grid -->
+                        <div class="grid grid-cols-2 gap-2 mb-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl p-3">
+                            <div class="text-center">
+                                <span class="block text-xs text-gray-400 uppercase">Jarak</span>
+                                <span class="font-bold text-gray-700 dark:text-gray-200 text-sm">${rec.dist}</span>
+                            </div>
+                            <div class="text-center border-l border-gray-200 dark:border-gray-600">
+                                <span class="block text-xs text-gray-400 uppercase">Kemiripan</span>
+                                <span class="font-bold text-primary-600 dark:text-primary-400 text-sm">${rec.sim}</span>
+                            </div>
+                        </div>
+
+                        <!-- Tombol Action -->
+                        <div class="mt-auto grid grid-cols-2 gap-3">
+                            <button onclick="focusOnMap(${rec.lat}, ${rec.lon})" class="px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg text-sm font-semibold transition text-center">
+                                <i class="fas fa-map text-gray-500 mr-1"></i> Peta
+                            </button>
+                            <a href="${rec.gmaps}" target="_blank" class="px-3 py-2 bg-primary-50 dark:bg-primary-900/30 hover:bg-primary-100 text-primary-700 dark:text-primary-300 rounded-lg text-sm font-semibold transition text-center flex items-center justify-center gap-1 border border-primary-200 dark:border-primary-800">
+                                Maps <i class="fas fa-external-link-alt text-xs"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                `;
+                cardsContainer.innerHTML += cardHTML;
+            });
+
+            // Scroll ke hasil (sedikit delay agar smooth)
+            setTimeout(() => {
+                resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+
+        } catch (err) {
+            alert(err.message);
+        } finally {
+            btnText.innerText = "Cari";
+            spinner.classList.add('hidden');
+            btnIcon.classList.remove('hidden');
+        }
+    });
+
+    // Fungsi Helper: Klik tombol "Lihat di Peta" pada kartu
+    function focusOnMap(lat, lon) {
+        document.getElementById('map-section').scrollIntoView({ behavior: 'smooth' });
+        // Kita trigger invalidate lagi jaga-jaga kalau user belum pernah scroll ke bawah
+        map.invalidateSize(); 
+        map.setView([lat, lon], 15);
+        
+        markers.forEach(m => {
+            const mLat = m.getLatLng().lat;
+            const mLon = m.getLatLng().lng;
+            if (Math.abs(mLat - lat) < 0.0001 && Math.abs(mLon - lon) < 0.0001) {
+                m.openPopup();
+            }
+        });
+    }
+</script>
+{% endblock %}

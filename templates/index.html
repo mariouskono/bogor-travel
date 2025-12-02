@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="relative min-h-screen flex items-center justify-center -mt-20">
+    <!-- Background Image: Puncak Tea Garden/Nature Vibe -->
+    <div class="absolute inset-0 z-0">
+        <img src="https://images.unsplash.com/photo-1622422053677-cd91d8fb0013?q=80&w=1631&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" 
+             alt="Bogor Nature" 
+             class="w-full h-full object-cover">
+        <!-- Overlay Gradient: Supaya teks terbaca jelas -->
+        <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-gray-50 dark:to-dark-900"></div>
+    </div>
+    
+    <!-- Content -->
+    <div class="relative z-10 max-w-5xl mx-auto px-4 text-center sm:px-6 lg:px-8 pt-20">
+        <div class="animate-fade-in-up space-y-6">
+            <!-- Badge -->
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-sm font-semibold tracking-wide shadow-lg mb-4">
+                <span class="w-2 h-2 rounded-full bg-primary-400 animate-pulse"></span>
+                AI-Powered Tourism Recommendation
+            </div>
+
+            <!-- Main Heading -->
+            <h1 class="text-5xl md:text-7xl font-extrabold text-white tracking-tight leading-tight drop-shadow-2xl">
+                Jelajahi Pesona Alam <br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary-300 to-green-200">Kota Hujan</span>
+            </h1>
+
+            <!-- Subheading -->
+            <p class="mt-4 text-lg md:text-xl text-gray-100 max-w-2xl mx-auto font-light leading-relaxed drop-shadow-md">
+                Temukan destinasi wisata tersembunyi di Bogor yang sesuai dengan preferensi Anda menggunakan teknologi <b>Deep Learning (Autoencoder)</b>.
+            </p>
+            
+            <!-- Buttons -->
+            <div class="flex flex-col sm:flex-row justify-center gap-4 pt-8">
+                <a href="{{ url_for('recommender') }}" class="group relative px-8 py-4 bg-primary-600 hover:bg-primary-500 text-white font-bold rounded-full shadow-xl shadow-primary-600/30 transition-all transform hover:-translate-y-1 hover:shadow-2xl overflow-hidden">
+                    <span class="relative z-10 flex items-center gap-3">
+                        Mulai Mencari <i class="fas fa-search-location group-hover:scale-110 transition-transform"></i>
+                    </span>
+                </a>
+                <a href="{{ url_for('model') }}" class="px-8 py-4 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white font-semibold rounded-full transition-all hover:-translate-y-1 hover:bg-white hover:text-primary-800">
+                    Pelajari Model
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Info Cards Section (Overlapping Hero) -->
+<section class="relative z-20 -mt-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto mb-20">
+    <div class="grid md:grid-cols-2 gap-6">
+        <!-- Kaggle Card -->
+        <a href="https://www.kaggle.com/datasets/bertnardomariouskono/bogor-indonesia-tourist-attractions-dataset?select=data_wisata_bogor_final.csv" target="_blank" class="group relative bg-white dark:bg-dark-800 p-8 rounded-3xl shadow-xl hover:shadow-2xl transition-all border border-gray-100 dark:border-gray-700 hover:border-blue-400 overflow-hidden">
+            <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all"></div>
+            <div class="flex items-start gap-6 relative z-10">
+                <div class="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center shrink-0 text-blue-500 group-hover:scale-110 transition-transform">
+                    <i class="fab fa-kaggle text-3xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Dataset Kaggle</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+                        Akses dataset lengkap hasil scraping mandiri yang digunakan untuk melatih model rekomendasi ini.
+                    </p>
+                </div>
+            </div>
+        </a>
+
+        <!-- Colab Card -->
+        <a href="https://colab.research.google.com/drive/1VGe5m7OWH5T8N2dAnwctl4DF6Xc2cjjr?usp=sharing" target="_blank" class="group relative bg-white dark:bg-dark-800 p-8 rounded-3xl shadow-xl hover:shadow-2xl transition-all border border-gray-100 dark:border-gray-700 hover:border-orange-400 overflow-hidden">
+            <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-orange-500/10 rounded-full blur-2xl group-hover:bg-orange-500/20 transition-all"></div>
+            <div class="flex items-start gap-6 relative z-10">
+                <div class="w-14 h-14 rounded-2xl bg-orange-50 dark:bg-orange-900/30 flex items-center justify-center shrink-0 text-orange-500 group-hover:scale-110 transition-transform">
+                    <i class="fab fa-google text-3xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">Google Colab</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+                        Lihat proses *end-to-end* pembuatan model Deep Learning Autoencoder & CRISP-DM di notebook ini.
+                    </p>
+                </div>
+            </div>
+        </a>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BogorTravel | {{ title }}</title>
+    
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                fontFamily: {
+                    sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                },
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5', // Hijau mint lembut
+                            200: '#a7f3d0',
+                            300: '#6ee7b7',
+                            400: '#34d399',
+                            500: '#10b981', // Emerald Primary
+                            600: '#059669', // Emerald Darker
+                            700: '#047857',
+                            800: '#065f46',
+                            900: '#064e3b',
+                        },
+                        dark: {
+                            800: '#1e293b',
+                            900: '#0f172a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Font Awesome (Modern Icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+        
+        .nav-active {
+            color: #059669;
+            font-weight: 700;
+            position: relative;
+        }
+        .nav-active::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: #059669;
+            border-radius: 2px;
+        }
+        /* Mobile Active State */
+        .mobile-nav-active {
+            background-color: #ecfdf5;
+            color: #059669;
+            font-weight: 700;
+            border-left: 4px solid #059669;
+        }
+        .dark .mobile-nav-active {
+            background-color: #064e3b;
+            color: #34d399;
+            border-left-color: #34d399;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 dark:bg-dark-900 dark:text-gray-100 transition-colors duration-300 flex flex-col min-h-screen">
+
+    <!-- NAVBAR -->
+    <nav class="fixed w-full z-50 bg-white/80 dark:bg-dark-900/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                
+                <!-- Logo -->
+                <a href="{{ url_for('home') }}" class="flex items-center gap-3 group">
+                    <div class="w-10 h-10 bg-primary-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary-500/30 transform group-hover:rotate-12 transition-transform duration-300">
+                        <i class="fas fa-leaf text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-xl tracking-tight text-gray-900 dark:text-white leading-none">BogorTravel</h1>
+                        <span class="text-xs text-primary-600 dark:text-primary-400 font-medium tracking-wider uppercase">AI Recommender</span>
+                    </div>
+                </a>
+
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="{{ url_for('home') }}" class="text-sm font-medium transition hover:text-primary-600 {{ 'nav-active' if request.endpoint == 'home' else 'text-gray-600 dark:text-gray-300' }}">Beranda</a>
+                    <a href="{{ url_for('model') }}" class="text-sm font-medium transition hover:text-primary-600 {{ 'nav-active' if request.endpoint == 'model' else 'text-gray-600 dark:text-gray-300' }}">Model AI</a>
+                    <a href="{{ url_for('recommender') }}" class="text-sm font-medium transition hover:text-primary-600 {{ 'nav-active' if request.endpoint == 'recommender' else 'text-gray-600 dark:text-gray-300' }}">Uji Coba</a>
+                    <a href="{{ url_for('author') }}" class="text-sm font-medium transition hover:text-primary-600 {{ 'nav-active' if request.endpoint == 'author' else 'text-gray-600 dark:text-gray-300' }}">Author</a>
+                    
+                    <!-- Dark Mode Button -->
+                    <button id="theme-toggle" class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-yellow-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition focus:outline-none focus:ring-2 focus:ring-primary-500">
+                        <i class="fas fa-moon dark:hidden"></i>
+                        <i class="fas fa-sun hidden dark:inline"></i>
+                    </button>
+                </div>
+
+                <!-- Mobile Menu Toggle -->
+                <div class="md:hidden flex items-center gap-4">
+                    <button id="theme-toggle-mobile" class="text-gray-600 dark:text-yellow-400 focus:outline-none">
+                        <i class="fas fa-moon dark:hidden text-xl"></i>
+                        <i class="fas fa-sun hidden dark:inline text-xl"></i>
+                    </button>
+                    <button id="mobile-menu-btn" class="text-gray-700 dark:text-white focus:outline-none">
+                        <i class="fas fa-bars text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Dropdown -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white dark:bg-dark-900 border-t dark:border-gray-800 absolute w-full shadow-xl">
+            <div class="px-4 pt-4 pb-6 space-y-2">
+                <a href="{{ url_for('home') }}" class="block px-4 py-3 rounded-lg text-base font-medium transition {{ 'mobile-nav-active' if request.endpoint == 'home' else 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
+                    <i class="fas fa-home w-6"></i> Beranda
+                </a>
+                <a href="{{ url_for('model') }}" class="block px-4 py-3 rounded-lg text-base font-medium transition {{ 'mobile-nav-active' if request.endpoint == 'model' else 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
+                    <i class="fas fa-brain w-6"></i> Model AI
+                </a>
+                <a href="{{ url_for('recommender') }}" class="block px-4 py-3 rounded-lg text-base font-medium transition {{ 'mobile-nav-active' if request.endpoint == 'recommender' else 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
+                    <i class="fas fa-search-location w-6"></i> Uji Coba
+                </a>
+                <a href="{{ url_for('author') }}" class="block px-4 py-3 rounded-lg text-base font-medium transition {{ 'mobile-nav-active' if request.endpoint == 'author' else 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
+                    <i class="fas fa-user-circle w-6"></i> Author
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT INJECTION -->
+    <main class="flex-grow pt-20">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-white dark:bg-dark-900 border-t border-gray-100 dark:border-gray-800 mt-auto">
+        <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-2">
+                <i class="fas fa-leaf text-primary-500"></i>
+                <span class="font-bold text-gray-900 dark:text-white">BogorTravel</span>
+            </div>
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+                &copy; 2025 Deep Learning Project by Bertnardo Mario Uskono.
+            </p>
+            <div class="flex space-x-4">
+                <a href="#" class="text-gray-400 hover:text-primary-500 transition"><i class="fab fa-github"></i></a>
+                <a href="#" class="text-gray-400 hover:text-primary-500 transition"><i class="fab fa-linkedin"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- GLOBAL SCRIPTS -->
+    <script>
+        // Dark Mode Logic
+        const themeToggles = [document.getElementById('theme-toggle'), document.getElementById('theme-toggle-mobile')];
+        const html = document.documentElement;
+
+        function checkTheme() {
+            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                html.classList.add('dark');
+            } else {
+                html.classList.remove('dark');
+            }
+        }
+        checkTheme();
+
+        themeToggles.forEach(btn => {
+            btn?.addEventListener('click', () => {
+                html.classList.toggle('dark');
+                localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
+            });
+        });
+
+        // Mobile Menu Logic
+        const menuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        menuBtn?.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+    </script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>
